@@ -1,0 +1,53 @@
+# Run Permissions Fix - sometimes this happens when the daily doesn't run correctly
+sudo chown -R librenms:librenms /opt/librenms
+sudo chmod -R ug=rwX /opt/librenms/rrd /opt/librenms/logs /opt/librenms/bootstrap/cache/ /opt/librenms/storage/
+sudo chown -R librenms:librenms /opt/librenms
+
+#To Fix Broken Update
+cd /opt/librenms
+sudo git pull
+sudo runuser -l librenms -c './daily.sh'
+sudo chown -R librenms:librenms /opt/librenms
+sudo setfacl -d -m g::rwx /opt/librenms/rrd /opt/librenms/logs /opt/librenms/bootstrap/cache/ /opt/librenms/storage/
+sudo chmod -R ug=rwX /opt/librenms/rrd /opt/librenms/logs /opt/librenms/bootstrap/cache/ /opt/librenms/storage/
+sudo chown -R librenms:librenms /opt/librenms
+
+# If you get a woops error and Validate is showing good Try this
+chown -R librenms:librenms /opt/librenms 
+setfacl -d -m g::rwx /opt/librenms/rrd /opt/librenms/logs /opt/librenms/bootstrap/cache/ /opt/librenms/storage/ 
+setfacl -R -m g::rwx /opt/librenms/rrd /opt/librenms/logs /opt/librenms/bootstrap/cache/ /opt/librenms/storage/
+
+# If your local git contains modified files, this could prevent automatic updates.
+cd /opt/librenms
+sudo runuser -l librenms -c './scripts/github-remove -d'
+
+#Fixing File System Checker
+fsck /dev/PRD--LibreNMS--vg-root
+fsck /dev/mapper/PRD--LibreNMS--vg-root
+
+# After PHP upgrade if you're getting a blank page with 500 error(example is upgrading from php7.0 to php7.2)
+  # Installs apache2 php 7.2 module
+sudo apt install libapache2-mod-php7.2 libapache2-mod-php
+  # Removes old apache2 php 7.0 module/plugin - Make sure you put the right version in there
+sudo a2dismod php7.0
+a2enmod php7.2
+#  Restarts apache2 service
+sudo systemctl restart apache2.service
+
+# If Libre Just jumps off a cliff this is sometimes a last resort that works as well
+cd /opt/librenms
+# ./scripts/github-remove -d then run ./daily.sh (make sure you run everything as the librenms user)
+sudo runuser -l librenms -c './scripts/github-remove -d'
+sudo runuser -l librenms -c './daily.sh'
+
+# Are you getting weird errors while doing the Daily Update Manually that say "Class '\App\Providers\Viewserviceprovider' not found"
+Go to /opt/librenms/bootstrap/cache
+and delete all of the files in there and re-run the daily.sh
+
+# Sometimes the Laravel Framework doesn't update correctly
+# To Fix Larvel issues – validate shows good and daily shows good – then run these
+php artisan optimize
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan route:clear
