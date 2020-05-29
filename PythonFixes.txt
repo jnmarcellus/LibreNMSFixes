@@ -1,0 +1,4 @@
+# If you are running into Python issues you can look at the version
+python3 -c "import sys;print(int(sys.version_info < (3, 5)))" 2> /dev/null
+# Also try installing the latest requirements
+pip3 install -r requirements.txt
