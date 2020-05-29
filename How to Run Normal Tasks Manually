@@ -1,0 +1,11 @@
+# Manually Discover All Devices
+./discovery.php -h all
+
+# Manually Update LibreNMS that usually happens each day
+sudo runuser -l librenms -c './daily.sh'
+
+# Manually run the Configuration Validation - Do this is Libre is running into Odd Errors
+sudo runuser -l librenms -c './validate.php'
+
+# Manually Test Authentication
+sudo runuser -l librenms -c './scripts/auth_test.php -u'
